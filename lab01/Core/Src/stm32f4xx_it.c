@@ -23,6 +23,10 @@
 
 /* External variables --------------------------------------------------------*/
 extern int8_t current_col;
+extern int8_t current_row;
+extern int8_t char_index;
+//extern char* message;
+//extern char* char_table;
 
 /******************************************************************************/
 /*           Cortex-M4 Processor Interruption and Exception Handlers          */
@@ -165,10 +169,20 @@ void SysTick_Handler(void)
 /**
   * @brief This function handles EXTI line 4 interrupt.
   */
-void EXTI4_IRQHandler(void)
+
+
+void EXTI4_IRQHandler(void) //handles COL0
 {
   // Your code here
-
+	__disable_irq();
+	if (__HAL_GPIO_EXTI_GET_FLAG(COL0_Pin)) { /*
+		message[0]=char_table[(current_row*4)+0];
+		message[1]='\0'; */
+		current_col=3;
+		char_index=current_row*4+current_col;
+		HAL_GPIO_TogglePin(LD1_GPIO_Port, LD1_Pin);
+	}
+	__enable_irq();
   HAL_GPIO_EXTI_IRQHandler(COL0_Pin);
 }
 
@@ -178,7 +192,28 @@ void EXTI4_IRQHandler(void)
 void EXTI9_5_IRQHandler(void)
 {
   // Your code here
-
+	__disable_irq();
+	if (__HAL_GPIO_EXTI_GET_FLAG(COL1_Pin)) {
+		/*message[0]=char_table[(current_row*4)+1];
+		message[1]='\0';*/ 
+		HAL_GPIO_TogglePin(LD1_GPIO_Port, LD1_Pin);
+		current_col=2;
+		
+	}
+	else if (__HAL_GPIO_EXTI_GET_FLAG(COL2_Pin)) {
+		/*message[0]=char_table[(current_row*4)+2];
+		message[1]='\0';*/
+		HAL_GPIO_TogglePin(LD1_GPIO_Port, LD1_Pin);
+		current_col=1;
+	}
+	else if (__HAL_GPIO_EXTI_GET_FLAG(COL3_Pin)) {
+		/*message[0]=char_table[(current_row*4)+3];
+		message[1]='\0';*/
+		HAL_GPIO_TogglePin(LD1_GPIO_Port, LD1_Pin);
+		current_col=0;
+	}
+	char_index=current_row*4+current_col;
+	__enable_irq();
   HAL_GPIO_EXTI_IRQHandler(COL1_Pin);
   HAL_GPIO_EXTI_IRQHandler(COL2_Pin);
   HAL_GPIO_EXTI_IRQHandler(COL3_Pin);

@@ -21,7 +21,9 @@
 
 
 int8_t current_row = -1, current_col = -1;
-
+int8_t char_index = 0;
+char char_table[]={'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F', '\0'};
+char message[100];
 
 int main(void)
 {
@@ -35,8 +37,8 @@ int main(void)
   MX_USART3_UART_Init();
   MX_USB_OTG_FS_PCD_Init();
 
-  char message[100];
-  sprintf(message, "Printing test");
+  
+  sprintf(message, "Printing test ");
   print_msg(message);
 
   /* Initialize all configured peripherals */
@@ -45,7 +47,7 @@ int main(void)
   MX_USB_OTG_FS_PCD_Init();
   
   /* Initialize ROW outputs */
-  HAL_GPIO_WritePin(ROW0_GPIO_Port, ROW0_Pin, GPIO_PIN_SET);
+  HAL_GPIO_WritePin(ROW0_GPIO_Port, ROW0_Pin, GPIO_PIN_RESET);
   HAL_GPIO_WritePin(ROW1_GPIO_Port, ROW1_Pin, GPIO_PIN_RESET);
   HAL_GPIO_WritePin(ROW2_GPIO_Port, ROW2_Pin, GPIO_PIN_RESET);
   HAL_GPIO_WritePin(ROW3_GPIO_Port, ROW3_Pin, GPIO_PIN_RESET);
@@ -53,7 +55,36 @@ int main(void)
   /* Infinite loop */
   while (1)
   {
-    HAL_GPIO_TogglePin(LD2_GPIO_Port, LD2_Pin);
-    HAL_Delay(500);
+    HAL_GPIO_TogglePin(ROW0_GPIO_Port, ROW0_Pin);//toggle pin high
+		current_row=0;
+		HAL_Delay(1);
+		HAL_GPIO_TogglePin(ROW0_GPIO_Port, ROW0_Pin);//toggle pin low
+		//current_row=-1;
+		HAL_Delay(1);
+		
+		HAL_GPIO_TogglePin(ROW1_GPIO_Port, ROW1_Pin);
+		current_row=1;
+		HAL_Delay(1);
+		HAL_GPIO_TogglePin(ROW1_GPIO_Port, ROW1_Pin);
+		//current_row=-1;
+		HAL_Delay(1);
+		
+		HAL_GPIO_TogglePin(ROW2_GPIO_Port, ROW2_Pin);
+		current_row=2;
+		HAL_Delay(1);
+		HAL_GPIO_TogglePin(ROW2_GPIO_Port, ROW2_Pin);
+		//current_row=-1;
+		HAL_Delay(1);
+		
+		HAL_GPIO_TogglePin(ROW3_GPIO_Port, ROW3_Pin);
+		current_row=3;
+		HAL_Delay(1);
+		HAL_GPIO_TogglePin(ROW3_GPIO_Port, ROW3_Pin);
+		//current_row=-1;
+    HAL_Delay(1); //small delay between iterations
+		
+		message[0]=char_table[char_index];
+		message[1]='\0';
+		print_msg(message);
   }
 }
