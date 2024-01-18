@@ -191,6 +191,7 @@ void EXTI15_10_IRQHandler(void)
 {
   if (__HAL_GPIO_EXTI_GET_FLAG(USER_Btn_Pin)) {
     // Your code here
+		HAL_GPIO_TogglePin(LD1_GPIO_Port, LD1_Pin);
   }
 
   HAL_GPIO_EXTI_IRQHandler(USER_Btn_Pin);
