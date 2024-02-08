@@ -46,7 +46,7 @@ int main(void)
 		
 	//Enable the timer
 	HAL_TIM_Base_Start(&htim6);
-	__HAL_TIM_SET_PRESCALER(&htim6,99);
+	__HAL_TIM_SET_PRESCALER(&htim6, 0);
 	
 	//DAC Enable
 	HAL_DAC_Init(&hdac);
@@ -64,17 +64,18 @@ int main(void)
 	
 	double n=0;
 	for(int i = 0; i < 628; i += 1){
-		sinLUT[i]=2000*(1+ sin(n));
+		sinLUT[i]=(sin(n));
 		n+=0.01;
 		sprintf(message, "Sinval: %f\n", sinLUT[i]);
-		print_msg(message);
+		//print_msg(message);
 	}
 	
 /*
 	sprintf(message, "Hello");
 	print_msg(message); */
 	
-	int iterator = 0;
+	int idx = 0;
+	float idxf=0;
 	
   while (1)
   {
@@ -128,32 +129,59 @@ int main(void)
 		//Generating arbitrary waveforms
 		float temp = 0;
 
-		/*if(iterator > 628) {
-			break; 
-    } 
-		else {
-			temp = (float) (sinLUT[iterator % 628]+5)*0.5* pow(2,10); // -> will generate perfect sine wave 
-    }*/
-		
-		for(int harmonic = 1; harmonic < 200; harmonic += 2){
-			temp += (float) (sinLUT[(harmonic * iterator) % 628]+5)* 4/(PI * harmonic) * pow(2,10); // will generate square wave 
-    }
-		
-		/*for(int harmonic = 1; harmonic < 50; harmonic++){
-			temp += (float) (sinLUT[(harmonic * iterator) % 628]+ 4)* 1/(harmonic) * pow(2,9); //will generate sawtooth
-    } */
-		
-		 /*for(int harmonic = 1; harmonic < 100; harmonic += 2){
-			temp += (float) (sinLUT[(harmonic * iterator) % 628] + 2)* pow(-1, ((harmonic - 1)/2))/pow(harmonic, 2) * pow(2, 9); // will generate triangular wave
-     }*/
+	  time_start = __HAL_TIM_GET_COUNTER(&htim6);
 
-
-		//sprintf(message, "temp value: %f	\n", temp);
+		for (int n = 0; n < 0; n += 1){
+			//temp += 2 * (sin((2*n+1) * idxf)) * 1/(PI * (2 * n + 1)); //Square
+			//temp -=  (sin(n*idxf))*((1/n)*(1/PI)); 
+			//temp += 4*pow(-1, n)*sin((2*n+1)*idxf)/(pow(PI, 2)*pow(2*n+1,2)); //Triangle
+			//temp += 2 * (sinLUT[((2*n+1) * idx)%628]) * 1/(PI * (2 * n + 1));
+		}
+		
+		
+		fixedpt tempFx=FXD_FROM_FLOAT(1.0);
+		fixedpt tempTemp=0;
+		/*
+		for (int n=0; n<2; n+=1){
+			tempTemp = FXD_FROM_FLOAT(sinLUT[((2*n+1) * idx)%628]);
+			fixedpt factor1 = FXD_DIV(FXD_FROM_FLOAT(1.0), FXD_FROM_INT(2*n+1));
+			fixedpt factor2 = FXD_DIV(FXD_FROM_FLOAT(2.0), FXD_FROM_FLOAT(PI));
+			tempTemp = FXD_MUL(factor1, tempTemp);
+			tempTemp = FXD_MUL(factor2, tempTemp);
+			tempFx = FXD_ADD(tempTemp, tempFx);
+		}*/
+		//tempFx=FXD_MUL(tempFx, FXD_FROM_INT(128));
+		//temp=FXD_TO_FLOAT(tempFx);
+		//temp=temp*512;
+		
+		tempFx=FXD_FROM_FLOAT(sinLUT[idx]);
+		sprintf(message, "Fixed point representation: %i, LUT val: %f\n", tempFx, sinLUT[idx]);
 		//print_msg(message);
-
+		tempFx=FXD_ADD(tempFx, FXD_FROM_FLOAT(1.0));
+		tempFx=FXD_MUL(tempFx, FXD_FROM_FLOAT(512.0));
+		
+		tempFx=tempFx>>12;
+		sprintf(message, "Int: %i\n", tempFx);
+		//print_msg(message);
+		//tempFx=FXD_ADD(tempFx, 0.8);
+		//tempFx=FXD_MUL(tempFx, 1024);
+		
+		//temp = temp + 0.5;
+		//temp = temp;
+		//sprintf(message, "temp value: %f	\n", temp);
+	  //print_msg(message);
+		
 		HAL_GPIO_TogglePin(LD2_GPIO_Port, LD2_Pin);
-		HAL_DAC_SetValue(&hdac, DAC_CHANNEL_1, DAC_ALIGN_12B_R, (int)temp);
-    iterator++;
+		HAL_DAC_SetValue(&hdac, DAC_CHANNEL_1, DAC_ALIGN_12B_R, tempFx);
+    idx+=1;
+		idxf+=0.01;
+		if (idx>628){
+			time_end = __HAL_TIM_GET_COUNTER(&htim6);
+			time_final = time_end - time_start;
+			sprintf(message, "Time elapsed: %f	\n", time_final);
+			print_msg(message);
+			idx=0;
+		}
 		//HAL_GPIO_TogglePin(LD2_GPIO_Port, LD2_Pin);
   } 
 	
