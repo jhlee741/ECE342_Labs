@@ -85,7 +85,9 @@ void rtc_set_date(uint8_t week_day,uint8_t day,uint8_t month,uint8_t year)
 }
 
 void eeprom_write(uint16_t address, uint8_t *data, uint16_t size) {
-  // Your code here
+  if (HAL_I2C_Mem_Write(&hi2c1,ADDR_EEPROM,address,I2C_MEMADD_SIZE_16BIT,data,size,100) != HAL_OK){
+    Error_Handler();
+  }
 }
 
 uint8_t eeprom_read(uint16_t address) {
