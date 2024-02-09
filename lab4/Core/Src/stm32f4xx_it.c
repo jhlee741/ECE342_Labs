@@ -20,6 +20,11 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "stm32f4xx_it.h"
+#include "dfr0151.h"
+#include "config.h"
+#include <time.h>
+#include <stdlib.h>
+
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 /* USER CODE END Includes */
@@ -57,7 +62,7 @@
 /* External variables --------------------------------------------------------*/
 
 /* USER CODE BEGIN EV */
-
+extern int8_t interrupt_trigger;
 /* USER CODE END EV */
 
 /******************************************************************************/
@@ -199,5 +204,18 @@ void SysTick_Handler(void)
 /******************************************************************************/
 
 /* USER CODE BEGIN 1 */
+
+void EXTI15_10_IRQHandler(void)
+{
+	__disable_irq();
+  if (__HAL_GPIO_EXTI_GET_FLAG(USER_Btn_Pin)) {
+    
+		
+		interrupt_trigger=1;
+  }
+	__enable_irq();
+  HAL_GPIO_EXTI_IRQHandler(USER_Btn_Pin);
+}
+
 
 /* USER CODE END 1 */
